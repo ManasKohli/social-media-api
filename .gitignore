@@ -8,6 +8,7 @@ venv/
 # Python cache
 __pycache__/
 *.pyc
+test.db
 
 # OS files
 .DS_Store
