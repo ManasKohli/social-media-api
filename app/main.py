@@ -13,8 +13,6 @@ import tempfile
 import httpx
 
 
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_db_and_tables()
@@ -115,6 +113,25 @@ async def get_feed(session: AsyncSession = Depends(get_async_session)):
             "created_at": post.created_at.isoformat()
         })  
     return {"posts": post_data}
+
+# Delete a post
+@app.delete("/post/{post_id}")
+async def delete_post(post_id: str, session: AsyncSession = Depends(get_async_session)): 
+    try:
+        post_uuid = uuid.UUID(post_id)
+
+        post = await session.get(Post, post_uuid)
+
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
+        await session.delete(post)
+        await session.commit()
+
+        return {"detail": "Post deleted successfully"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 #health check endpoint
 @app.get('/')
