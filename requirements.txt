@@ -5,3 +5,5 @@ fastapi-users[sqlalchemy]
 aiosqlite
 python-multipart
 imagekitio
+streamlit
+requests

@@ -32,7 +32,7 @@ class Post(Base):
     __tablename__ = "posts"
  
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     caption = Column(Text)
     url = Column(String, nullable=False)
     file_type = Column(String, nullable=False)
@@ -53,9 +53,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
-    # Import UserDB here to avoid circular imports at module-import time
-    from app.users import UserDB
-    yield SQLAlchemyUserDatabase(UserDB, session, Users) 
+    yield SQLAlchemyUserDatabase(session, Users) 
 
 
 

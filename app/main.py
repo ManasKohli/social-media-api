@@ -41,6 +41,9 @@ async def upload_post(
     temp_file_path = None
 
     try:
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        
         # 1) Save upload to temp file
         with tempfile.NamedTemporaryFile(
             delete=False,
@@ -108,27 +111,19 @@ async def upload_post(
 
 #Feed
 @app.get("/feed")
-async def get_feed(session: AsyncSession = Depends(get_async_session),
-                   user: Users = Depends(current_active_user)):
+async def get_feed(session: AsyncSession = Depends(get_async_session)):
     result = await session.execute(select(Post).order_by(Post.created_at.desc()))
-    posts = [row[0] for row in result.all()]
-
-    result = await session.execute(select(Users))
-    users = [row[0] for row in result.all()]
-    user_dict = {u.id: u.email for u in users}
+    posts = result.scalars().all()
 
     post_data = []
     for post in posts:
         post_data.append({
             "id": str(post.id),
-            "user_id": str(post.user_id),
             "caption": post.caption,
             "url": post.url,
             "file_type": post.file_type,
             "file_name": post.file_name,
-            "created_at": post.created_at.isoformat(),
-            "is_owner": post.user_id == user.id,
-            "email": user_dict.get(post.user_id, "unknown"),
+            "created_at": post.created_at.isoformat()
         })  
     return {"posts": post_data}
 
